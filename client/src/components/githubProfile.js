@@ -8,7 +8,8 @@ class GithubProfile extends Component {
     this.state = {
       activePage: 1,
       itemPerPage: 10,
-      repos: []
+      repos: [],
+      text: ''
     }
   }
 
@@ -22,10 +23,14 @@ class GithubProfile extends Component {
       .catch(err => console.log(err));
   }
 
-  handlePageChange(pageNumber) {
+  onPageChange = (pageNumber) => {
     console.log(`active page is ${pageNumber}`);
-    this.setState({activePage: pageNumber});
+    this.setState({ activePage: pageNumber });
   }
+
+  onTextChange = (e) => {
+    this.setState({ text: e.target.value });
+  };
 
   render() {
     const { repos } = this.state;
@@ -62,15 +67,21 @@ class GithubProfile extends Component {
     ));
     return (
       <div>
-        <h3 className="mb-4">Bengaluru based Github user's:</h3>
-          {repoItems}
+        <h4 className="mb-4">Bengaluru based Github user's:</h4>
+          <input
+              type="text"
+              className="text-input"
+              placeholder="Search User's"
+              onChange={this.onTextChange}
+            />    
+        {repoItems}
           <div>
             <Pagination
               activePage={this.state.activePage}
               itemsCountPerPage={this.state.itemPerPage}
               totalItemsCount={this.state.repos.length}
               pageRangeDisplayed={5}
-              onChange={this.handlePageChange.bind(this)}
+              onChange={this.onPageChange.bind(this)}
             />
           </div>
       </div>
