@@ -1,41 +1,105 @@
 import React, { Component } from 'react';
-import Pagination from 'react-js-pagination';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import Pagination from './pagination';
+import Axios from 'axios';
 
 class GithubProfile extends Component {
-  constructor(props){
-    super(props);
-    this.state = {
-      activePage: 1,
-      itemPerPage: 10,
-      repos: [],
-      text: ''
-    }
+  state = {
+    activePage: 1,
+    users: [],
+    searchedUsers: [],
+    searchBtnClicked: false
   }
 
-  componentDidMount() {
-    fetch('/github/result')
+  componentDidMount = () => this.fetchUsersData(this.state.activePage);
+
+  fetchUsersData = async (pageNumber) => {
+
+    const hitAPI = (updatedPageNumber) => {
+      const { searchText, searchBtnClicked } = this.state;
+      
+      let allUsersURL = `/github/allUsers/${!!updatedPageNumber}`, searchUserURL = `/github/user/${searchText}/${updatedPageNumber}`;
+
+      if (searchBtnClicked) URL = searchUserURL;
+      else URL = allUsersURL;
+
+      fetch(URL)
       .then(res => res.json())
       .then(data => {
-          console.log(data);
-          this.setState({ repos: data });
+          this.setState({ 
+            activePage: updatedPageNumber,
+            totalCount: data.total_count,
+            users: data.items 
+          });
         })
       .catch(err => console.log(err));
+    }
+    
+    if (typeof pageNumber === 'number') hitAPI(pageNumber)
+    else if (pageNumber === "Previous") hitAPI(this.state.activePage - 1)
+    else if (pageNumber === "Next") hitAPI(this.state.activePage + 1)
+    else if (!pageNumber) hitAPI(1)
+
   }
 
-  onPageChange = (pageNumber) => {
-    console.log(`active page is ${pageNumber}`);
-    this.setState({ activePage: pageNumber });
-  }
+  handleTextInputOrSearchBtn = () => {
+    const { activePage, searchBtnClicked, searchText } = this.state;
 
-  onTextChange = (e) => {
-    this.setState({ text: e.target.value });
+    fetch(`/github/user/${searchText}/${activePage}`)
+    .then(res => res.json())
+    .then((user) => {
+      if (searchBtnClicked) {
+        this.setState({
+          totalCount: user.total_count,
+          users: user.items,
+          usersListHideOrShow: "hide" 
+        })
+      } 
+      else {
+        this.setState({
+          searchedUsers: user.items
+        })
+      }
+    })
+    .catch(err => console.log(err))
   };
 
-  render() {
-    const { repos } = this.state;
+  handleSearch = () => {
+  }
 
-    const repoItems = repos.map(repo => (
+  returnSearchedUsers = () => {
+    return (
+      this.state.searchedUsers.map((user, i) => {
+        return (
+          <ul className="list-group" key={i}>
+            <li 
+              className="list-group-item"
+              onClick={() => {
+                let dummyArray = [];
+                dummyArray.push(user)
+                this.setState({ 
+                  users: dummyArray,
+                  usersListHideOrShow: "hide"
+                })
+              }}
+            >
+              <img
+                className="rounded-circle"
+                src={user.avatar_url}
+                alt={user.login}
+                style={{ width: '60px', marginRight: '5px' }}
+              />
+              {user.login}
+            </li>
+          </ul>
+        )
+      })
+    )
+  }
+
+  render() {
+    const { users } = this.state;
+
+    const repoItems = users.map(repo => (
       <div key={repo.id} className="card card-body mb-2">
         <div className="row">
           <div className="col-md-6">
@@ -65,25 +129,57 @@ class GithubProfile extends Component {
         </div>  
       </div>
     ));
+
     return (
       <div>
+        <h1 
+          onClick={async () => {
+            await this.setState({ searchBtnClicked: false })
+            this.fetchUsersData()
+            this.refs.searchInput.value = ""
+          }}
+        >
+          Welcome to Namma Bengaluru GitHub Community..!!!
+        </h1>
         <h4 className="mb-4">Bengaluru based Github user's:</h4>
-          <input
-              type="text"
-              className="text-input"
-              placeholder="Search User's"
-              onChange={this.onTextChange}
-            />    
-        {repoItems}
-          <div>
-            <Pagination
-              activePage={this.state.activePage}
-              itemsCountPerPage={this.state.itemPerPage}
-              totalItemsCount={this.state.repos.length}
-              pageRangeDisplayed={5}
-              onChange={this.onPageChange.bind(this)}
+          <div className="input-group mb-3">
+            <input 
+              ref="searchInput"
+              type="text" 
+              className="form-control" 
+              placeholder="Search by Github Username" 
+              // aria-label="Github username" 
+              aria-describedby="basic-addon2" 
+              onChange={(e) => { 
+                this.handleTextInputOrSearchBtn()
+                this.setState({ 
+                  searchText: e.target.value,
+                  usersListHideOrShow: "show"
+                })
+              }}
             />
+            <div className="input-group-append">
+              <button 
+                className="btn btn-outline-secondary" 
+                type="button"
+                onClick={async () => {
+                  await this.setState({ searchBtnClicked: true })
+                  this.handleTextInputOrSearchBtn()
+                }}
+              >
+                Search
+              </button>
+            </div>
           </div>
+          <div className={this.state.usersListHideOrShow}>
+            {this.returnSearchedUsers()}
+          </div>
+          {repoItems}
+          <Pagination 
+            currentPage={this.state.activePage}
+            totalCount={this.state.totalCount} 
+            parentMethod={this.fetchUsersData}
+          />
       </div>
     )
   }

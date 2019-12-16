@@ -22,6 +22,28 @@
   font-size: large;
 }
 
+/* .overlay {  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  z-index: 2;
+  opacity: 0;
+  background: rgba(39, 42, 43, 0.8);
+  transition: opacity 200ms ease-in-out;
+  border-radius: 4px;
+  margin: -15px 0 0 -15px;
+  button { 
+  margin:5px;
+  }
+   &:hover {
+    opacity: 1;
+  } 
+} */
+.hide {
+  display: none;
+}
+
 @keyframes App-logo-spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
