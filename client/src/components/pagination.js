@@ -75,8 +75,6 @@ const Pagination = (props) => {
   }
 
   const handleClick = page => (e) => {
-    // e.preventDefault();
-
     props.parentMethod(page)
   }
 
@@ -85,33 +83,34 @@ const Pagination = (props) => {
 
     return (
         <Fragment>
-            <ul className="pagination pagination-lg">
-            {pages.map((page, i) => {
-              if (page === LEFT_PAGE) return (
-                <li key={i} className="page-item">
-                  <a className="page-link" href="#" aria-label="Previous" onClick={() => props.parentMethod("Previous")}>
-                    <span aria-hidden="true">&laquo;</span>
-                    <span className="sr-only">Previous</span>
-                  </a>
-                </li>
-              );
+          <ul className="pagination pagination-lg d-flex justify-content-center mt-5">
+            {
+              pages.map((page, i) => {
+                if (page === LEFT_PAGE) return (
+                  <li key={i} className="page-item">
+                    <a className="page-link" href="#" aria-label="Previous" onClick={() => props.parentMethod("Previous")}>
+                      <span aria-hidden="true">&laquo;</span>
+                      <span className="sr-only">Previous</span>
+                    </a>
+                  </li>
+                );
 
-              if (page === RIGHT_PAGE) return (
-                <li key={i} className="page-item">
-                  <a className="page-link" href="#" aria-label="Next" onClick={() => props.parentMethod("Next")}>
-                    <span aria-hidden="true">&raquo;</span>
-                    <span className="sr-only">Next</span>
-                  </a>
-                </li>
-              );
+                if (page === RIGHT_PAGE) return (
+                  <li key={i} className="page-item">
+                    <a className="page-link" href="#" aria-label="Next" onClick={() => props.parentMethod("Next")}>
+                      <span aria-hidden="true">&raquo;</span>
+                      <span className="sr-only">Next</span>
+                    </a>
+                  </li>
+                );
 
-              return (
-                <li key={i} className={`page-item${props.currentPage === page ? ' active' : ''}`}>
-                  <a className="page-link" href="#" onClick={handleClick(page)}>{page}</a>
-                </li>
-              )
-            })
-          }
+                return (
+                  <li key={i} className={`page-item${props.currentPage === page ? ' active' : ''}`}>
+                    <a className="page-link" href="#" onClick={handleClick(page)}>{page}</a>
+                  </li>
+                )
+              })
+            }
         </ul>
       </ Fragment>
     )

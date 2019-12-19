@@ -2,6 +2,21 @@
   text-align: center;
 }
 
+/* width */
+.show::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+.show::-webkit-scrollbar-track {
+  background: #f1f1f1; 
+}
+ 
+/* Handle */
+.show::-webkit-scrollbar-thumb {
+  background: #70DBDB; 
+}
+
 .App-logo {
   animation: App-logo-spin infinite 20s linear;
   height: 80px;
@@ -22,29 +37,135 @@
   font-size: large;
 }
 
-/* .overlay {  
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: absolute;
-  z-index: 2;
-  opacity: 0;
-  background: rgba(39, 42, 43, 0.8);
-  transition: opacity 200ms ease-in-out;
-  border-radius: 4px;
-  margin: -15px 0 0 -15px;
-  button { 
-  margin:5px;
-  }
-   &:hover {
-    opacity: 1;
-  } 
-} */
+.container {
+  min-width: 100%;
+  padding: 0;
+}
+
+.main-container {
+  background-image: url('https://i.imgur.com/8gEpVJr.png');
+  position: relative;
+  background-attachment: fixed;
+  /* background-size:cover; */
+  width: 100%;
+  height: 100%;
+}
+
+.logo-title {
+  color: whitesmoke;
+  margin-left: 1em;
+}
+
+.search-btn {
+  height: 1em;
+  background: none;
+  border: none;
+  width: 3em;
+  padding: 0.25em;
+}
+
+.form-control {
+  background: none;
+}
+
 .hide {
   display: none;
 }
+
+.loader-container {
+  text-align: center;
+  margin-top: 20%;
+}
+
+.navbar {
+  background-image: url('https://i.imgur.com/8gEpVJr.png');
+  background-attachment: fixed;
+  min-width: 100%;
+  padding-right: 4em;
+  padding-left: 3em;
+}
+
+.show{
+  position: absolute;
+  right: 12%;
+  width: 41%;
+  right: 8.5%;
+  z-index: 9;
+  max-height: 53vh;
+  overflow-y: auto;
+}
+
+.card {
+  background: none;
+  border: none;
+  color: whitesmoke;
+}
+
+a {
+  color: whitesmoke;
+}
+
+.user-container {
+  margin-top: 6%;
+  padding: 1em;
+  min-height: 87.5vh;
+}
+
+.search-list-container {
+  /* height: 60%;
+  margin-right: 6em;
+  margin-left: 42em; */
+}
+
+.pagination > li > a,
+.pagination > li > span {
+    color: green;
+}
+
+.pagination>li.active>a {
+  background-color: green !important;
+}
+
+.form-control::-webkit-input-placeholder {
+  color: whitesmoke;
+}
+
+.heading-tag{
+  font-family: serif;
+  font-size: 2.5rem;
+  font-weight: bold;
+}
+
+p {
+  font-weight: 500;
+  font-size: 1em;
+  line-height: 1.1;
+  font-family: sans-serif;
+  margin: 0;
+}
+
+.logo-container{
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center ;
+}
+
+/* .rounded-circle {
+  width: 200px;
+  margin-right: 5px;
+  margin-top: 5px;
+  height: 195px;
+} */
 
 @keyframes App-logo-spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+li{
+  font-size: 1.1em;
+  font-weight: 500;
+  cursor: pointer;
+}
+

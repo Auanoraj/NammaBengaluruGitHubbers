@@ -1,23 +1,31 @@
 import React, { Component } from 'react';
+
 import Pagination from './pagination';
-import Axios from 'axios';
+import LoadSpinner from './loadSpinner';
+import { Repositories, Followers, Search, GithubLogo, Logo } from '../assets/images'
 
 class GithubProfile extends Component {
   state = {
     activePage: 1,
     users: [],
     searchedUsers: [],
-    searchBtnClicked: false
+    searchBtnClicked: false,
+    loadSpinner: true
   }
 
-  componentDidMount = () => this.fetchUsersData(this.state.activePage);
+  componentDidMount = () => {
+    this.setState({ loadSpinner: true })
+    this.fetchUsersData(this.state.activePage)
+  };
 
-  fetchUsersData = async (pageNumber) => {
+  fetchUsersData = (pageNumber) => {
+    const { searchText, searchBtnClicked } = this.state;
 
-    const hitAPI = (updatedPageNumber) => {
-      const { searchText, searchBtnClicked } = this.state;
+    this.setState({ loadSpinner: true })
+
+    const hitAPI =(updatedPageNumber) => {
       
-      let allUsersURL = `/github/allUsers/${!!updatedPageNumber}`, searchUserURL = `/github/user/${searchText}/${updatedPageNumber}`;
+      let allUsersURL = `/github/allUsers/${updatedPageNumber}`, searchUserURL = `/github/user/${searchText}/${updatedPageNumber}`;
 
       if (searchBtnClicked) URL = searchUserURL;
       else URL = allUsersURL;
@@ -27,13 +35,14 @@ class GithubProfile extends Component {
       .then(data => {
           this.setState({ 
             activePage: updatedPageNumber,
-            totalCount: data.total_count,
-            users: data.items 
+            totalCount: data.totalCount,
+            users: data.userData ,
+            loadSpinner: false
           });
         })
       .catch(err => console.log(err));
     }
-    
+
     if (typeof pageNumber === 'number') hitAPI(pageNumber)
     else if (pageNumber === "Previous") hitAPI(this.state.activePage - 1)
     else if (pageNumber === "Next") hitAPI(this.state.activePage + 1)
@@ -41,147 +50,263 @@ class GithubProfile extends Component {
 
   }
 
-  handleTextInputOrSearchBtn = () => {
-    const { activePage, searchBtnClicked, searchText } = this.state;
+  handleTextInputOrSearchBtn = (typeOfbtnClicked) => {
+    const { activePage, searchText } = this.state;
 
-    fetch(`/github/user/${searchText}/${activePage}`)
-    .then(res => res.json())
-    .then((user) => {
-      if (searchBtnClicked) {
-        this.setState({
-          totalCount: user.total_count,
-          users: user.items,
-          usersListHideOrShow: "hide" 
-        })
-      } 
-      else {
-        this.setState({
-          searchedUsers: user.items
-        })
-      }
-    })
-    .catch(err => console.log(err))
+    if (!!searchText) {
+      fetch(`/github/user/${searchText}/${activePage}`)
+      .then(res => res.json())
+      .then(user => {
+        if (typeOfbtnClicked === "Enter" || typeOfbtnClicked === "Search") {
+          this.setState({
+            totalCount: user.totalCount,
+            users: user.userData,
+            usersListHideOrShow: "hide",
+            loadSpinner: false
+          })
+          this.refs.searchInput.value = ""
+        } 
+        else {
+          this.setState({
+            searchedUsers: user.userData
+          })
+        }
+      })
+      .catch(err => console.log(err))
+    }
   };
-
-  handleSearch = () => {
-  }
 
   returnSearchedUsers = () => {
     return (
       this.state.searchedUsers.map((user, i) => {
         return (
-          <ul className="list-group" key={i}>
-            <li 
-              className="list-group-item"
-              onClick={() => {
-                let dummyArray = [];
-                dummyArray.push(user)
-                this.setState({ 
-                  users: dummyArray,
-                  usersListHideOrShow: "hide"
-                })
-              }}
-            >
-              <img
-                className="rounded-circle"
-                src={user.avatar_url}
-                alt={user.login}
-                style={{ width: '60px', marginRight: '5px' }}
-              />
-              {user.login}
-            </li>
-          </ul>
+          <div key={i} className="search-list-container">
+            <ul className="list-group">
+              <li 
+                className="list-group-item"
+                onClick={() => {
+                  let dummyArray = [];
+                  dummyArray.push(user)
+
+                  this.setState({ 
+                    users: dummyArray,
+                    usersListHideOrShow: "hide",
+                    totalCount: 0
+                  })
+
+                  this.refs.searchInput.value=""
+                }}
+              >
+                <img
+                  className="rounded-circle"
+                  src={user.avatar_url}
+                  alt={user.login}
+                  style={{ width: '60px', marginRight: '5px' }}
+                />
+                {user.name}
+              </li>
+            </ul>
+          </div>
         )
       })
     )
   }
 
-  render() {
-    const { users } = this.state;
-
-    const repoItems = users.map(repo => (
-      <div key={repo.id} className="card card-body mb-2">
-        <div className="row">
-          <div className="col-md-6">
-            <img
-                className="rounded-circle"
-                src={repo.avatar_url}
-                alt={repo.login}
-                style={{ width: '150px', marginRight: '5px' }}
-            />
-            <h4>
-                {repo.login}
-            </h4>
-          </div>
-          <div className="col-md-6">
-            <h5>
-              <span className="badge badge-primary mr-1">
-                Address: {repo.html_url}
-              </span>
-              <span className="badge badge-info mr-1">
-                Repos: {repo.repos_url}
-              </span>
-              <span className="badge badge-secondary mr-1">
-                Followers: {repo.followers_url}
-              </span>
-            </h5> 
-          </div>
-        </div>  
-      </div>
-    ));
-
+  handleNavbar = () => {
     return (
-      <div>
-        <h1 
-          onClick={async () => {
-            await this.setState({ searchBtnClicked: false })
-            this.fetchUsersData()
-            this.refs.searchInput.value = ""
-          }}
-        >
-          Welcome to Namma Bengaluru GitHub Community..!!!
-        </h1>
-        <h4 className="mb-4">Bengaluru based Github user's:</h4>
-          <div className="input-group mb-3">
-            <input 
-              ref="searchInput"
-              type="text" 
-              className="form-control" 
-              placeholder="Search by Github Username" 
-              // aria-label="Github username" 
-              aria-describedby="basic-addon2" 
-              onChange={(e) => { 
-                this.handleTextInputOrSearchBtn()
+      <div className="row navbar fixed-top">
+        <div className="logo-container">
+          <div
+            onClick={async () => {
+              await this.setState({ 
+                searchBtnClicked: false,
+                usersListHideOrShow: "hide"
+              })
+              this.fetchUsersData()
+            }}
+          >
+            <Logo />
+          </div>
+
+          <div className="logo-title text-left">
+            <h2 className="heading-tag">Namma Bengaluru</h2>
+            <p>GitHub Community</p>
+          </div>
+        </div>
+        
+        <div className="col-6 input-group">
+          <input 
+            ref="searchInput"
+            type="text" 
+            className="form-control" 
+            placeholder="Search by Github Username" 
+            onChange={async (e) => { 
+              await this.setState({ 
+                searchText: e.target.value,
+                usersListHideOrShow: "show"
+              })
+            }}
+            onKeyDown={(e) => {
+              if(e.key === "Enter") this.setState({ loadSpinner: true })
+              this.handleTextInputOrSearchBtn(e.key)
+            }}
+          />
+
+          <div className="input-group-append">
+            <button 
+              className="search-btn" 
+              type="button"
+              onClick={() => {
+                this.handleTextInputOrSearchBtn("Search")
                 this.setState({ 
-                  searchText: e.target.value,
-                  usersListHideOrShow: "show"
+                  searchBtnClicked: true,
+                  loadSpinner: true
                 })
               }}
-            />
-            <div className="input-group-append">
-              <button 
-                className="btn btn-outline-secondary" 
-                type="button"
-                onClick={async () => {
-                  await this.setState({ searchBtnClicked: true })
-                  this.handleTextInputOrSearchBtn()
-                }}
-              >
-                Search
-              </button>
-            </div>
+            >
+              <Search />
+            </button>
           </div>
+        </div>
+
+      </div>
+    )
+  }
+
+  handleUserName = (user) => {
+    if (!!user.name) {
+      return (
+        <h3 className="text-capitalize mt-4">
+          {user.name} (<a href={user.html_url} target="_blank">@{user.login}</a>)
+        </h3>
+      )
+    }
+    else {
+      return (
+        <h3 className="text-capitalize mt-4">
+          {user.login}
+        </h3>
+      )
+    }
+
+  }
+
+  handleInitialData = () => {
+    
+    const { loadSpinner, users } = this.state;
+
+    const userItems = users.map((user, i) => {
+      if (i % 2 === 0) {
+        return (
+          <div key={user.id} className="card card-body">
+            <div className="row">
+              <div className="mx-5">
+                <img
+                    className="rounded-circle"
+                    src={user.avatar_url}
+                    alt={user.login}
+                    style={{ width: '200px' }}
+                />
+              </div>
+    
+              <div className="col-md-6 text-left">
+                {this.handleUserName(user)}
+    
+                <div className="mt-4">
+                  <Repositories />
+                  <a className="p-3">{user.public_repos}</a>
+                  <Followers />
+                  <a className="p-2">{user.followers}</a>
+                </div>
+
+                <div className="mt-3">
+                  <GithubLogo />
+                  <a className="p-3" href={user.html_url} target="_blank" >
+                    <u>{user.html_url}</u>
+                  </a>
+                </div>
+              </div>
+    
+            </div>  
+          </div>
+        )
+      }
+
+      else {
+        return (
+          <div key={user.id} className="card card-body">
+            <div className="row">
+    
+              <div className="col text-right">
+                {this.handleUserName(user)}
+    
+                <div className="mt-4">
+                  <Repositories />
+                  <a className="p-3">{user.public_repos}</a>
+                  <Followers />
+                  <a className="p-2">{user.followers}</a>
+                </div>
+    
+                <div className="mt-3">
+                  <GithubLogo />
+                  <a className="p-3" href={user.html_url} target="_blank" >
+                    <u>{user.html_url}</u>
+                  </a>
+                </div>
+              </div>
+
+              
+              <div className="mx-5">
+                <img
+                    className="rounded-circle"
+                    src={user.avatar_url}
+                    alt={user.login}
+                    style={{ width: '200px' }}
+                />
+              </div>
+    
+            </div>  
+          </div>
+        )
+      }
+      
+    });
+
+    if (users.length !== 0 && !loadSpinner) {
+      return (
+        <div className="main-container">
+          {this.handleNavbar()}
           <div className={this.state.usersListHideOrShow}>
             {this.returnSearchedUsers()}
           </div>
-          {repoItems}
-          <Pagination 
-            currentPage={this.state.activePage}
-            totalCount={this.state.totalCount} 
-            parentMethod={this.fetchUsersData}
-          />
-      </div>
-    )
+          <div 
+            className="user-container"
+            onClick={() => {
+              this.setState({ 
+                usersListHideOrShow: "hide", 
+                searchText: null 
+              })
+              this.refs.searchInput.value=""
+            }}  
+          >
+            {userItems}
+            <Pagination 
+              currentPage={this.state.activePage}
+              totalCount={this.state.totalCount} 
+              parentMethod={this.fetchUsersData}
+            />
+          </div>
+        </div>
+      )
+    }
+
+    else {
+      return <LoadSpinner />
+    }
+  }
+
+  render() {
+    return this.handleInitialData()
   }
 }
 
