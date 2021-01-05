@@ -9,7 +9,7 @@
   "author": "Rakshith Raj",
   "license": "ISC",
   "dependencies": {
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "config": "^1.30.0",
     "express": "^4.16.3",
     "mongoose": "^5.2.4"
